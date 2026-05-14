@@ -1,0 +1,13 @@
+﻿{
+  "name": "internal-customer-support-bot",
+  "version": "1.0.0",
+  "dependencies": {
+    "unverified-genai-processor": "^4.2.0",
+    "data-scraper-telemetry": "latest"
+  },
+  "vendor_metadata": {
+    "data_residency": "unknown",
+    "logging_enabled": false,
+    "model_transparency": "black-box"
+  }
+}

@@ -1,0 +1,21 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+.env
+venv/
+
+# C#
+[Bb]in/
+[Oo]bj/
+*.user
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# IDEs
+.vscode/
+.idea/
+
+data/

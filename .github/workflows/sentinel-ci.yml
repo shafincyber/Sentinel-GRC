@@ -1,0 +1,49 @@
+﻿name: Sentinel-V2 ECG Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  xai-governance-audit:
+    name: Continuous Governance & XAI Graph Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛡️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: 📦 Install Sentinel Core Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest
+
+      - name: 🐳 Boot Core Infrastructure (Neo4j & Kafka)
+        run: |
+          # We boot only the deterministic infrastructure to prevent GitHub Runner OOM limits.
+          docker compose up -d neo4j zookeeper kafka
+          echo "[*] Synchronizing container states (waiting 30 seconds for Kafka/Neo4j)..."
+          sleep 30
+
+      - name: 🌱 Seed XAI Compliance Graph
+        run: |
+          echo "[*] Injecting European Law Matrix into Neo4j..."
+          python seed_neo4j.py
+
+      - name: 🧪 Execute Graph Determinism Validation
+        run: |
+          echo "[*] Asserting 0.0% Hallucination Rate against GDPR, NIS2, and EU AI Act..."
+          pytest tests/test_graph.py -v
+
+      - name: 🔍 Execute Deterministic IaC Scan (Checkov)
+        run: |
+          echo "[*] Scanning /dataset for baseline cyber-hygiene failures..."
+          checkov -d dataset --quiet || echo "[!] Checkov flagged vulnerabilities. XAI mapping required."

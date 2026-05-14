@@ -1,0 +1,20 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: internal-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: internal-api
+  template:
+    metadata:
+      labels:
+        app: internal-api
+    spec:
+      containers:
+      - name: api-container
+        image: internal-api:v2.1
+        securityContext:
+          privileged: true # VULNERABILITY: Container running in privileged mode (Triggers CKV_K8S_16 -> NIS2 Art 21)
+          runAsUser: 0     # VULNERABILITY: Running as root (Triggers CKV_K8S_40)
