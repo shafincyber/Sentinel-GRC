@@ -76,6 +76,20 @@
         }
       ],
       "standard_remediation": "Apply the principle of least privilege. Restrict IAM access exclusively to the specific service accounts requiring execution."
+    },
+    {
+      "technical_trigger": "privileged_container_root_access",
+      "checkov_id": ["CKV_K8S_16", "CKV_K8S_40"],
+      "severity": "High",
+      "regulatory_links": [
+        {
+          "regulation": "NIS2",
+          "article": "Article 21(2)(d)",
+          "domain": "Basic Cyber Hygiene",
+          "explanation": "Running system containers under root access or privileged modes violates baseline infrastructure isolation policies mandated by NIS2."
+        }
+      ],
+      "standard_remediation": "Modify securityContext profiles to disallow container privilege escalation modes entirely."
     }
   ]
 }
