@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this software architecture or framework in your research, please cite it as below."
+authors:
+  - family-names: "Sowrav"
+    given-names: "S. M. Shafin"
+title: "Sentinel-V2.1: An Event-Driven Orchestration Framework for Explainable Continuous Governance in DevSecOps"
+version: 2.1.0
+date-released: 2026-05-15
+url: "https://github.com/shafincyber/Sentinel-GRC"
+repository-code: "https://github.com/shafincyber/Sentinel-GRC"
+keywords:
+  - DevSecOps
+  - Explainable AI
+  - XAI
+  - Governance Risk and Compliance
+  - GDPR
+  - NIS2
+  - EU AI Act
+  - Autonomous Remediation
+  - Sovereign AI
+license: MIT

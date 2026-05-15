@@ -1,95 +1,71 @@
 ﻿{
+  "version": "2.1.0",
+  "last_updated": "2026-05-15",
   "frameworks": {
     "NIS2": {
-      "version": "Directive (EU) 2022/2555"
+      "Article_21": "Measures for a high common level of cybersecurity across the Union (Supply Chain Risk & Access Control)."
     },
-    "EU_AI_ACT": {
-      "version": "Regulation 2024/1689"
+    "EU_AI_Act": {
+      "Article_10": "Data and data governance requirements for high-risk AI systems."
     },
     "GDPR": {
-      "version": "Regulation (EU) 2016/679"
+      "Article_28": "Processor obligations, requiring strict access control and least-privilege principles.",
+      "Article_32": "Security of processing, mandating the encryption of personal data at rest and in transit."
     }
   },
-  "mappings": [
+  "deterministic_mapping": [
     {
-      "technical_trigger": "unencrypted_data_at_rest",
-      "checkov_id": ["CKV_AWS_19", "CKV_AWS_21", "CKV_AWS_288", "CKV_AZURE_3", "CKV_GCP_65"],
-      "severity": "High",
-      "regulatory_links": [
-        {
-          "regulation": "NIS2",
-          "article": "Article 21(2)(d)",
-          "domain": "Basic Cyber Hygiene & Data Security",
-          "explanation": "Failure to encrypt data at rest violates the mandate to implement baseline cryptography and cyber hygiene to protect network and information systems."
-        },
-        {
-          "regulation": "GDPR",
-          "article": "Article 32(1)(a)",
-          "domain": "Security of Processing",
-          "explanation": "Lack of encryption directly violates the requirement to implement pseudonymisation and encryption of personal data to mitigate data breach risks."
-        }
+      "checkov_id": "CKV_AWS_19",
+      "description": "Ensure all data stored in the S3 bucket is securely encrypted at rest.",
+      "violates": [
+        "GDPR_Article_32", 
+        "NIS2_Article_21"
       ],
-      "standard_remediation": "Enable AES-256 encryption or KMS key integration on the storage resource."
+      "remediation_mandate": "Enforce AES-256 or AWS KMS encryption on the storage bucket to satisfy GDPR data-at-rest encryption mandates."
     },
     {
-      "technical_trigger": "unauthenticated_third_party_api",
-      "checkov_id": ["CUSTOM_LLM_FLAG_01"],
-      "severity": "Critical",
-      "regulatory_links": [
-        {
-          "regulation": "NIS2",
-          "article": "Article 21(2)(d)",
-          "domain": "Supply Chain Security",
-          "explanation": "Exposing infrastructure to an unauthenticated external vendor creates a critical supply chain vulnerability."
-        },
-        {
-          "regulation": "EU_AI_ACT",
-          "article": "Article 10",
-          "domain": "Data Governance",
-          "explanation": "Unvetted transmission of data to an external AI model circumvents required data governance, provenance tracking, and risk monitoring mandates."
-        },
-        {
-          "regulation": "GDPR",
-          "article": "Article 28(1)",
-          "domain": "Processor Obligations",
-          "explanation": "Transmitting data to unverified third-party APIs violates the requirement to only use processors providing sufficient guarantees to implement appropriate technical measures."
-        }
+      "checkov_id": "CKV_AWS_274",
+      "description": "Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy (Wildcard * permissions).",
+      "violates": [
+        "GDPR_Article_28", 
+        "NIS2_Article_21"
       ],
-      "standard_remediation": "Implement an API Gateway with mutual TLS (mTLS) and strict IAM role authorization before routing traffic to the vendor."
+      "remediation_mandate": "Remove wildcard (*) resource permissions and explicitly scope access to specific Amazon Resource Names (ARNs) to satisfy GDPR least-privilege processor obligations."
     },
     {
-      "technical_trigger": "permissive_iam_ai_storage",
-      "checkov_id": ["CKV_AWS_1", "CKV_AWS_54", "CKV_AWS_286", "CKV_AWS_287"],
-      "severity": "High",
-      "regulatory_links": [
-        {
-          "regulation": "EU_AI_ACT",
-          "article": "Article 10(2)(f)",
-          "domain": "Data Governance - Security",
-          "explanation": "Overly permissive access (e.g., wildcard '*' permissions) to AI training datasets compromises the integrity and security of the AI lifecycle."
-        },
-        {
-          "regulation": "GDPR",
-          "article": "Article 32(1)(b)",
-          "domain": "Confidentiality & Integrity",
-          "explanation": "Over-privileged access policies fail to ensure the ongoing confidentiality and integrity of processing systems containing personal data."
-        }
+      "checkov_id": "CKV_K8S_14",
+      "description": "Ensure Kubernetes Secrets are encrypted using a managed Key Management Service.",
+      "violates": [
+        "GDPR_Article_32", 
+        "NIS2_Article_21"
       ],
-      "standard_remediation": "Apply the principle of least privilege. Restrict IAM access exclusively to the specific service accounts requiring execution."
+      "remediation_mandate": "Implement an explicit EncryptionConfiguration resource for the etcd cluster handling Kubernetes secrets."
     },
     {
-      "technical_trigger": "privileged_container_root_access",
-      "checkov_id": ["CKV_K8S_16", "CKV_K8S_40"],
-      "severity": "High",
-      "regulatory_links": [
-        {
-          "regulation": "NIS2",
-          "article": "Article 21(2)(d)",
-          "domain": "Basic Cyber Hygiene",
-          "explanation": "Running system containers under root access or privileged modes violates baseline infrastructure isolation policies mandated by NIS2."
-        }
+      "checkov_id": "CKV_GCP_113",
+      "description": "Ensure Cloud SQL database instances do not have public IP addresses.",
+      "violates": [
+        "EU_AI_Act_Article_10", 
+        "GDPR_Article_32"
       ],
-      "standard_remediation": "Modify securityContext profiles to disallow container privilege escalation modes entirely."
+      "remediation_mandate": "Remove the public IP configuration from the database instance and mandate private VPC peering for AI training data pipelines to prevent public exposure."
+    },
+    {
+      "checkov_id": "CKV_AWS_143",
+      "description": "Ensure that S3 bucket has cross-region replication enabled.",
+      "violates": [
+        "NIS2_Article_21"
+      ],
+      "remediation_mandate": "Enable cross-region replication on the S3 bucket to ensure high availability and disaster recovery compliance under NIS2 mandates."
+    },
+    {
+      "checkov_id": "CKV_AZURE_44",
+      "description": "Ensure that 'Network Access' to Azure SQL database is restricted.",
+      "violates": [
+        "GDPR_Article_32", 
+        "EU_AI_Act_Article_10"
+      ],
+      "remediation_mandate": "Configure virtual network rules to restrict access to the Azure SQL database, satisfying GDPR data isolation requirements."
     }
   ]
 }
