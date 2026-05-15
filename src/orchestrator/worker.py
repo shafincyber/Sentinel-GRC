@@ -10,7 +10,7 @@ sys.path.append(BASE_DIR)
 
 from src.graph_db.neo4j_client import ComplianceGraph
 from src.semantic_engine.llama_guard import sanitize_manifest
-from src.remediation.auto_patcher import generate_iac_patch
+from src.remediation.auto_patcher import SovereignRemediationEngine
 
 OLLAMA_URL = "http://localhost:11434/api/generate"
 
@@ -146,6 +146,10 @@ def run_worker():
             emit_log('remediation', '[*] Initiating Autonomous Remediation Engine...\n[*] --------------------------------------------------')
             print("\n[*] --------------------------------------------------")
             print("[*] PHASE 4: Initiating Autonomous Remediation Engine...")
+            
+            # Initialize the engine here
+            patcher = SovereignRemediationEngine()
+            
             for finding in checkov_findings:
                 trigger_id = finding["id"]
                 target_file = finding["file"]
@@ -155,12 +159,31 @@ def run_worker():
                     reg_list = ", ".join(list(set([ctx.get("Regulation", "") for ctx in legal_data])))
                     emit_alert(trigger_id, reg_list, "VIOLATION_DETECTED")
                     
-                    # Log the AI action to the dashboard right pane
                     emit_log('remediation', f"[*] Llama-3 rewriting {os.path.basename(target_file)} to enforce {reg_list}...")
-                    generate_iac_patch(target_file, trigger_id, legal_data)
-                    emit_log('remediation', f"[+] SUCCESS: {trigger_id} remediated. Code saved to {os.path.basename(target_file).replace('.tf', '_patched.tf')}\n")
                     
-                    emit_alert(trigger_id, reg_list, "REMEDIATED")
+                    # Read the vulnerable file content to pass into the engine
+                    with open(target_file, 'r', encoding='utf-8') as tf_f:
+                        vulnerable_code = tf_f.read()
+                    
+                    # Extract the mandate string from the legal data mapping
+                    remediation_mandate = legal_data[0].get("Remediation", "")
+                    
+                    # Determine file extension/type (e.g., terraform)
+                    file_type = "terraform" if target_file.endswith(".tf") else "yaml"
+                    
+                    # Generate the patch using the updated engine instance
+                    patched_code = patcher.generate_patch(vulnerable_code, file_type, remediation_mandate)
+                    
+                    if patched_code:
+                        # Save the secure output
+                        patched_filename = target_file.replace('.tf', '_patched.tf').replace('.yaml', '_patched.yaml')
+                        with open(patched_filename, 'w', encoding='utf-8') as tf_f:
+                            tf_f.write(patched_code)
+                        
+                        emit_log('remediation', f"[+] SUCCESS: {trigger_id} remediated. Code saved to {os.path.basename(patched_filename)}\n")
+                        emit_alert(trigger_id, reg_list, "REMEDIATED")
+                    else:
+                        emit_log('remediation', f"[-] FAILURE: Could not generate patch for {trigger_id}\n")
                     
             emit_log('remediation', '[*] --------------------------------------------------')
             print("[*] --------------------------------------------------")
